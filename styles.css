@@ -48,10 +48,8 @@ canvas { display: block; width: 100%; height: 620px; background: var(--navy); }
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 6px; padding: 10px 12px; pointer-events: none;
   font-weight: 700; text-shadow: 0 2px 6px rgba(0, 0, 0, .6);
-  /* Strip navy tembus pandang: awan canvas tidak lagi menutupi angka HUD. */
-  background: linear-gradient(180deg, rgba(11, 30, 58, .75), rgba(11, 30, 58, .55));
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
+  /* Latar HUD opaque penuh: awan canvas tidak terlihat di belakang angka. */
+  background: #0B1E3A;
   border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
 #play-hint {
@@ -105,6 +103,7 @@ body.booth .booth-only { display: block; }
   padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
 }
 .link-btn.danger { border-color: rgba(255, 107, 107, .7); color: #ffb3b3; }
+.link-btn.danger.armed { background: #c0392b; border-color: #fff; color: #fff; }
 
 .boards { display: flex; gap: 10px; width: 100%; max-width: 460px; }
 .boards .board { flex: 1; min-width: 0; }

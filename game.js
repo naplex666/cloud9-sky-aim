@@ -384,17 +384,45 @@ btnSkip.addEventListener("click", clickBlur(() => {
   initialsRow.classList.add("hidden");
   btnAgain.focus();
 }));
+/* Reset leaderboard: konfirmasi IN-PAGE dua langkah (tanpa dialog native,
+   karena dialog bawaan browser sering ditelan browser otomatis sehingga klik
+   tampak tidak berpengaruh). Klik 1 = arm 3 detik ("Yakin? Klik lagi untuk hapus"),
+   klik 2 dalam jeda itu = hapus. Klik di luar / habis waktu = kembali. */
+function disarmReset(btn) {
+  if (!btn || !btn.dataset.armed) return;
+  delete btn.dataset.armed;
+  if (btn._resetTimer) { clearTimeout(btn._resetTimer); btn._resetTimer = null; }
+  btn.textContent = btn.dataset.origLabel || "Reset leaderboard";
+  btn.classList.remove("armed");
+}
 function bindReset(btn) {
   if (!btn) return;
-  btn.addEventListener("click", () => {
-    if (window.confirm("Hapus semua skor leaderboard (all-time + hari ini)?")) {
+  btn.dataset.origLabel = btn.textContent;
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (btn.dataset.armed) {
+      disarmReset(btn);
       clearBoards();
       renderAllBoards();
+      return;
     }
+    disarmReset($("btn-reset-attract"));
+    disarmReset($("btn-reset-board"));
+    btn.dataset.armed = "1";
+    btn.textContent = "Yakin? Klik lagi untuk hapus";
+    btn.classList.add("armed");
+    btn._resetTimer = setTimeout(() => disarmReset(btn), 3000);
   });
 }
 bindReset($("btn-reset-attract"));
 bindReset($("btn-reset-board"));
+/* Klik di luar tombol reset yang sedang armed = batalkan konfirmasi. */
+document.addEventListener("click", (e) => {
+  ["btn-reset-attract", "btn-reset-board"].forEach((id) => {
+    const b = $(id);
+    if (b && b.dataset.armed && e.target !== b && !b.contains(e.target)) disarmReset(b);
+  });
+});
 
 /* ---------- Gambar ---------- */
 function rr(x, y, w, h, r) {
