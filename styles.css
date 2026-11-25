@@ -1,0 +1,137 @@
+/* Sky Stack — produksi. Tema Cloud9: navy #0B1E3A, sky #00A8E8. Tanpa aset eksternal. */
+:root {
+  --navy: #0b1e3a;
+  --navy-deep: #071426;
+  --sky: #00a8e8;
+  --sky-dark: #0091da;
+  --ink: #0b1e3a;
+  --paper: #fff;
+  --mist: #bfe6f7;
+  --gold: #ffc53d;
+  --danger: #ff6b6b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: linear-gradient(180deg, #071426 0%, #0b1e3a 55%, #123a5c 100%);
+  color: var(--paper);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.hidden { display: none !important; }
+.top { text-align: center; padding: 12px 8px 4px; }
+.top h1 { font-size: clamp(26px, 6vw, 40px); letter-spacing: 2px; line-height: 1; }
+.sky { color: var(--sky); }
+.subtitle { color: var(--mist); font-size: 13px; margin-top: 4px; }
+
+#game-wrap {
+  position: relative;
+  width: min(520px, 96vw);
+  margin-top: 8px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+  border: 2px solid rgba(255, 255, 255, .15);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+canvas { display: block; width: 100%; height: 620px; background: var(--navy); }
+@media (max-height: 760px) { canvas { height: 540px; } }
+
+#hud {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 6px; padding: 10px 12px; pointer-events: none;
+  font-weight: 700; text-shadow: 0 2px 6px rgba(0, 0, 0, .6);
+}
+#hud .stat { text-align: center; min-width: 52px; }
+#hud .stat .label { font-size: 10px; letter-spacing: 1px; color: var(--mist); }
+#hud .stat .value { font-size: 24px; line-height: 1.1; }
+#hud .stat .value.small { font-size: 18px; }
+.hud-btn {
+  pointer-events: auto;
+  background: rgba(11, 30, 58, .7); color: #fff;
+  border: 1px solid rgba(255, 255, 255, .4); border-radius: 999px;
+  padding: 6px 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; text-align: center; padding: 20px;
+  background: rgba(7, 20, 38, .85);
+  overflow-y: auto;
+}
+.overlay h2 { font-size: clamp(28px, 7vw, 40px); letter-spacing: 2px; }
+.overlay .tagline { color: var(--mist); font-size: 14px; max-width: 360px; line-height: 1.5; }
+.overlay .big-score { font-size: 52px; font-weight: 800; line-height: 1; color: var(--gold); }
+.overlay .sub { color: var(--mist); font-size: 14px; }
+.cloud { font-size: 34px; }
+.booth-only { display: none; font-weight: 700; color: var(--gold); }
+body.booth .booth-only { display: block; }
+
+.btn {
+  background: var(--sky); color: #fff; border: none; border-radius: 999px;
+  padding: 14px 42px; font-size: 20px; font-weight: 800; letter-spacing: 1px;
+  cursor: pointer; box-shadow: 0 6px 0 var(--sky-dark), 0 10px 24px rgba(0, 0, 0, .4);
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--sky-dark); }
+.btn.secondary { background: #1e7fb8; box-shadow: 0 6px 0 #155a83, 0 10px 24px rgba(0, 0, 0, .4); font-size: 16px; padding: 10px 28px; }
+.btn.ghost { background: transparent; border: 2px solid rgba(255, 255, 255, .5); box-shadow: none; }
+
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
+.link-btn {
+  background: rgba(255, 255, 255, .1); color: #fff; text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px;
+  padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.link-btn.danger { border-color: rgba(255, 107, 107, .7); color: #ffb3b3; }
+
+.boards { display: flex; gap: 10px; width: 100%; max-width: 460px; }
+.boards .board { flex: 1; min-width: 0; }
+.board { width: 100%; max-width: 320px; background: rgba(255, 255, 255, .08); border-radius: 12px; padding: 10px 14px; }
+.board h3 { font-size: 12px; letter-spacing: 2px; color: var(--mist); margin-bottom: 6px; }
+.board ol { list-style: none; text-align: left; font-size: 15px; max-height: 220px; overflow-y: auto; }
+.board li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed rgba(255, 255, 255, .15); }
+.board li:last-child { border-bottom: none; }
+.board li.me { color: var(--gold); font-weight: 800; }
+.board .empty { color: var(--mist); font-size: 13px; text-align: center; }
+.daily-line { color: var(--mist); font-size: 12px; margin-top: 6px; }
+
+#initials-row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+#initials-row.hidden { display: none; }
+#initials {
+  width: 96px; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 6px;
+  text-transform: uppercase; padding: 8px 6px; border-radius: 10px;
+  border: 2px solid var(--sky); background: #fff; color: var(--ink);
+}
+
+#debug {
+  display: none; position: absolute; left: 8px; bottom: 8px; z-index: 5;
+  background: rgba(0, 0, 0, .65); color: #9dff9d; font: 11px monospace;
+  padding: 6px 8px; border-radius: 6px; white-space: pre; pointer-events: none;
+}
+#debug.on { display: block; }
+
+.hint { color: #7fa8c4; font-size: 12px; text-align: center; padding: 8px 12px; max-width: 520px; }
+footer { color: #7fa8c4; font-size: 11px; padding: 10px 12px 16px; text-align: center; max-width: 520px; }
+
+/* ---- Board view (?board=1): leaderboard monitor kedua ---- */
+#board-view { width: min(960px, 96vw); padding: 24px 8px; text-align: center; }
+#board-view h2 { font-size: clamp(26px, 5vw, 44px); letter-spacing: 2px; }
+#board-view .boards.big { max-width: 900px; margin: 18px auto; }
+#board-view .board { max-width: none; padding: 16px 20px; }
+#board-view .board h3 { font-size: 15px; }
+#board-view .board ol { font-size: 20px; max-height: 60vh; }
+#board-view .board li { padding: 7px 0; }
+#board-view .row { margin-top: 14px; }
+@media (max-width: 640px) {
+  .boards { flex-direction: column; }
+  .boards .board { max-width: 320px; margin: 0 auto; }
+  #board-view .boards.big { flex-direction: column; }
+}

@@ -6,7 +6,7 @@ THROWAWAY: yes — satu file `index.html`, greybox (lingkaran + awan CSS), rewri
 TIMEBOX: 1 sesi bangun v1, 25 Nov 2026.
 KEEP IF: pemain baru paham core verb dalam ~30 detik tanpa penjelasan, dan mau main lagi (replay) tanpa disuruh.
 KILL IF: verb hanya terasa enak sesudah dijelaskan, atau fun-nya butuh sistem di luar prototype (level, musuh, progression).
-RESULT: (kosong — isi sesudah playtest manusia oleh Zec)
+RESULT: 2026-11-25 ~13:39 WIB — PARKIR sebagai cadangan. Playtest Zec: Sky Stack lebih fun. Sky Aim tidak dibuang (loop lengkap + Reaction Sprint), tapi bukan entry utama; hanya dipakai lagi kalau Sky Stack mentok.
 
 ## Isi v1
 - `index.html` — vanilla HTML/CSS/JS + Canvas, tanpa dependensi eksternal.

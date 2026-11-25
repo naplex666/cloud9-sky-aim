@@ -47,9 +47,11 @@ Kategori 3 dipilih 25 Nov 2026: paling umum, tidak butuh pengetahuan esports dal
 - [x] 25 Nov 2026: rules + submission specifics dibaca (verifikasi langsung dari cloud9.devpost.com)
 - [x] Registrasi Devpost SELESAI 25 Nov 13:29 WIB — solo, akun pojokkanan29 (Pojok Kanan), tombol jadi "Start project", peserta 1.185. Kode trial JetBrains dikirim email maks 5 hari kerja sesudah daftar, tanpa form klaim tambahan.
 - [x] Prototype kandidat A Sky Aim v1 SELESAI 25 Nov 13:29 WIB — prototypes/sky-aim/index.html (27.612 byte, tanpa dependensi eksternal, serve lokal HTTP 200 terverifikasi). Blitz 60 detik + Reaction Sprint 10 ronde + leaderboard lokal Top 5. Playtest manusia BELUM — penentu keep/kill.
-- [ ] Polish + leaderboard + booth mode
-- [ ] Repo GitHub publik + LICENSE + README (methodology + tooling)
-- [ ] Demo live GitHub Pages (verifikasi langsung)
+- [x] Prototype kandidat B Sky Stack v1 SELESAI 25 Nov 13:32 WIB — prototypes/sky-stack/index.html (21.817 byte, tanpa dependensi eksternal, serve lokal HTTP 200 terverifikasi). Timing stacking satu tombol, Perfect streak, leaderboard lokal Top 5.
+- [x] Repo GitHub publik + Pages LIVE 25 Nov 13:34 WIB — https://github.com/naplex666/cloud9-sky-aim (MIT). Demo: https://naplex666.github.io/cloud9-sky-aim/prototypes/sky-aim/ dan .../prototypes/sky-stack/ — keduanya dicek langsung HTTP 200 dengan ukuran byte yang cocok.
+- [x] Playtest + bandingkan pairwise — VERDICT Zec 25 Nov ~13:39 WIB: **Sky Stack MENANG**, jadi entry utama. Sky Aim parkir sebagai cadangan. (Playtest browser independen masih jalan sebagai konfirmasi tambahan.)
+- [ ] Bangun Sky Stack jadi aplikasi final + demo live (GitHub Pages root)
+- Catatan 25 Nov 13:40 WIB: agen pembangun pertama TERTAHAN oleh peringatan risiko eksekusi yang salah sasaran saat cek repo. Agen utama verifikasi langsung (git status/log, ls): repo bersih, hanya berisi file bikinan kita sendiri (prototype vanilla HTML/CSS/JS + README + LICENSE + BRIEF), tidak ada yang mencurigakan. Lanjut bangun ulang dengan agen baru + otorisasi eksplisit ini.
 - [ ] Video demo maks 3 menit (YouTube, akun Pojok Kanan)
 - [ ] Bonus: AI-Powered Workflow Story (case study singkat di repo)
 - [ ] Submit Devpost sebelum 13 Jan 2027 02:00 WIB

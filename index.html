@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sky Stack — Cloud9 Booth Game</title>
+<meta name="description" content="Sky Stack: mini game booth Cloud9. Satu tombol, timing sempurna, menara setinggi langit. Skor tersimpan lokal, tanpa Wi-Fi.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <h1>SKY <span class="sky">STACK</span></h1>
+  <p class="subtitle">Cloud9 booth game &mdash; satu tombol, timing sempurna, menara setinggi langit.</p>
+</header>
+
+<main id="game-view">
+  <div id="game-wrap">
+    <canvas id="game" width="520" height="620" aria-label="Arena Sky Stack"></canvas>
+
+    <div id="hud">
+      <div class="stat"><div class="label">SKOR</div><div class="value" id="hud-score">0</div></div>
+      <div class="stat"><div class="label">TINGGI</div><div class="value" id="hud-height">0</div></div>
+      <div class="stat"><div class="label">PERFECT</div><div class="value small" id="hud-perfect">0&times;</div></div>
+      <div class="stat"><div class="label">BEST</div><div class="value small" id="hud-best">0</div></div>
+      <button id="btn-menu" class="hud-btn" type="button" aria-label="Kembali ke menu">MENU</button>
+      <button id="btn-mute" class="hud-btn" type="button" aria-label="Suara">&#128266;</button>
+    </div>
+
+    <div id="screen-attract" class="overlay">
+      <div class="cloud" aria-hidden="true">&#9729;&#65039;</div>
+      <h2>SKY <span class="sky">STACK</span></h2>
+      <p class="tagline">Klik / ketuk / Spasi saat blok tepat di atas menara. Perfect = blok tidak mengecil. Meleset total = jatuh.</p>
+      <button id="btn-start" class="btn" type="button">MULAI</button>
+      <div class="board">
+        <h3>TOP 5 &mdash; ALL TIME</h3>
+        <ol id="board-attract"></ol>
+        <p class="daily-line" id="daily-best-attract"></p>
+      </div>
+      <p class="sub">Satu run ideal di bawah 2 menit. Skor tersimpan lokal, tanpa Wi-Fi.</p>
+      <div class="row">
+        <a class="link-btn" href="?board=1">Leaderboard layar</a>
+        <a class="link-btn" href="?booth=1">Mode booth</a>
+        <button id="btn-reset-attract" class="link-btn danger" type="button">Reset leaderboard</button>
+      </div>
+    </div>
+
+    <div id="screen-over" class="overlay hidden">
+      <h2>GAME <span class="sky">OVER</span></h2>
+      <div class="big-score" id="final-score">0</div>
+      <p class="sub" id="final-detail">Tinggi 0 lantai &middot; Perfect 0</p>
+      <p class="sub booth-only" id="booth-countdown"></p>
+      <div id="initials-row">
+        <input id="initials" type="text" maxlength="3" placeholder="ABC" autocomplete="off" aria-label="Inisial 3 huruf">
+        <button id="btn-save" class="btn secondary" type="button">SIMPAN</button>
+        <button id="btn-skip" class="btn secondary ghost" type="button">LEWATI</button>
+      </div>
+      <div class="boards">
+        <div class="board">
+          <h3>TOP 10 &mdash; ALL TIME</h3>
+          <ol id="board-over-all"></ol>
+        </div>
+        <div class="board">
+          <h3>TOP 10 &mdash; HARI INI</h3>
+          <ol id="board-over-daily"></ol>
+        </div>
+      </div>
+      <div class="row">
+        <button id="btn-again" class="btn" type="button">MAIN LAGI</button>
+        <button id="btn-to-menu" class="btn secondary" type="button">KE MENU</button>
+      </div>
+    </div>
+
+    <div id="debug"></div>
+  </div>
+  <p class="hint">Tip booth: buka <strong>?booth=1</strong> untuk auto-reset 15 detik, dan <strong>?board=1</strong> untuk leaderboard di monitor kedua.</p>
+</main>
+
+<section id="board-view" class="hidden" aria-label="Leaderboard monitor">
+  <h2>SKY <span class="sky">STACK</span> &mdash; LIVE LEADERBOARD</h2>
+  <p class="sub" id="board-date"></p>
+  <div class="boards big">
+    <div class="board">
+      <h3>TOP 10 &mdash; ALL TIME</h3>
+      <ol id="board-live-all"></ol>
+    </div>
+    <div class="board">
+      <h3>TOP 10 &mdash; HARI INI</h3>
+      <ol id="board-live-daily"></ol>
+    </div>
+  </div>
+  <div class="row">
+    <a class="link-btn" href="./">Kembali ke game</a>
+    <button id="btn-reset-board" class="link-btn danger" type="button">Reset leaderboard</button>
+  </div>
+  <p class="sub">Refresh otomatis tiap 2 detik &middot; tersimpan lokal, tanpa Wi-Fi.</p>
+</section>
+
+<footer>Cloud9 x JetBrains: Sky&rsquo;s The Limit &middot; Kategori 3 Event Mini Game &middot; Nama &amp; aset original, tanpa aset Riot Games.</footer>
+
+<script src="game.js"></script>
+</body>
+</html>
