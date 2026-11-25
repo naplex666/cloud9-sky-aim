@@ -20,6 +20,7 @@ const CAMERA_ANCHOR = 0.30;       // posisi vertikal puncak menara di layar (0..
 const GROUND_MARGIN = 24;         // jarak garis tanah dari bawah canvas (px)
 const BOARD_MAX = 10;             // entri per leaderboard
 const BOARD_KEY_ALL = "skystack_board_all_v2";
+const BEST_KEY = "skystack_best_v1";
 const MUTE_KEY = "skystack_muted";
 const BOOTH_TIMEOUT_S = 15;       // auto-reset booth sesudah game over (detik)
 
@@ -44,7 +45,10 @@ const initialsRow = $("initials-row"), initialsInput = $("initials"),
       btnSave = $("btn-save"), btnSkip = $("btn-skip");
 const btnStart = $("btn-start"), btnAgain = $("btn-again"), btnToMenu = $("btn-to-menu");
 const debugEl = $("debug");
+const playHint = $("play-hint");
 if (DEBUG) debugEl.classList.add("on");
+function showPlayHint() { if (playHint) playHint.classList.remove("hidden"); }
+function hidePlayHint() { if (playHint) playHint.classList.add("hidden"); }
 
 /* ---------- Audio (WebAudio, tanpa file; mute tersimpan) ---------- */
 let audioCtx = null;
@@ -104,10 +108,26 @@ function addEntry(name, score, height, perfect) {
     saveBoard(key, b.slice(0, BOARD_MAX));
   }
 }
-function bestScore() { const b = loadBoard(BOARD_KEY_ALL); return b.length ? b[0].score : 0; }
+/* Skor terbaik tersimpan terpisah dari leaderboard: bertahan walau pemain
+   tidak menyimpan inisial. Dicatat saat game over, bukan saat simpan. */
+function loadBest() {
+  try { const v = parseInt(localStorage.getItem(BEST_KEY) || "0", 10); return Number.isFinite(v) ? Math.max(0, v) : 0; }
+  catch (e) { return 0; }
+}
+function recordBest(score) {
+  if (score <= 0) return;
+  try {
+    if (score > loadBest()) localStorage.setItem(BEST_KEY, String(score));
+  } catch (e) { /* storage penuh: main tetap jalan */ }
+}
+function bestScore() {
+  const b = loadBoard(BOARD_KEY_ALL);
+  return Math.max(loadBest(), b.length ? b[0].score : 0);
+}
 function clearBoards() {
   saveBoard(BOARD_KEY_ALL, []);
   saveBoard(todayKey(), []);
+  try { localStorage.removeItem(BEST_KEY); } catch (e) { /* abaikan */ }
 }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -186,6 +206,7 @@ function showAttract() {
   stopBoothTimer();
   state = "attract";
   score = 0; height = 0; perfectStreak = 0;
+  hidePlayHint();
   screenOver.classList.add("hidden");
   screenAttract.classList.remove("hidden");
   renderAllBoards();
@@ -203,6 +224,7 @@ function newGame() {
   state = "playing";
   screenAttract.classList.add("hidden");
   screenOver.classList.add("hidden");
+  showPlayHint();
   updateHud();
 }
 function spawnMoving() {
@@ -268,6 +290,8 @@ function drop() {
     shakeT = 0.3; shakeMag = 7;
     sfxOver();
     state = "over";
+    recordBest(score);
+    hidePlayHint();
     updateHud();
     setTimeout(showGameOver, 650);
     return;
@@ -302,12 +326,14 @@ function drop() {
   height++;
   moving = null;
   camTarget = Math.min(0, topY() - H * CAMERA_ANCHOR);
+  hidePlayHint();
   updateHud();
   spawnMoving();
 }
 
 function showGameOver() {
   if (state !== "over") return;
+  recordBest(score);
   finalScore.textContent = score;
   finalDetail.textContent = "Tinggi " + height + " lantai \u00b7 Perfect " + perfectCount +
     " (streak maks " + maxPerfectStreak + "\u00d7) \u00b7 Best " + Math.max(bestScore(), score);
