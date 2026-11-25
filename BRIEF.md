@@ -50,7 +50,7 @@ Kategori 3 dipilih 25 Nov 2026: paling umum, tidak butuh pengetahuan esports dal
 - [x] Prototype kandidat B Sky Stack v1 SELESAI 25 Nov 13:32 WIB — prototypes/sky-stack/index.html (21.817 byte, tanpa dependensi eksternal, serve lokal HTTP 200 terverifikasi). Timing stacking satu tombol, Perfect streak, leaderboard lokal Top 5.
 - [x] Repo GitHub publik + Pages LIVE 25 Nov 13:34 WIB — https://github.com/naplex666/cloud9-sky-aim (MIT). Demo: https://naplex666.github.io/cloud9-sky-aim/prototypes/sky-aim/ dan .../prototypes/sky-stack/ — keduanya dicek langsung HTTP 200 dengan ukuran byte yang cocok.
 - [x] Playtest + bandingkan pairwise — VERDICT Zec 25 Nov ~13:39 WIB: **Sky Stack MENANG**, jadi entry utama. Sky Aim parkir sebagai cadangan. (Playtest browser independen masih jalan sebagai konfirmasi tambahan.)
-- [ ] Bangun Sky Stack jadi aplikasi final + demo live (GitHub Pages root)
+- [x] Bangun Sky Stack jadi aplikasi final + demo live (GitHub Pages root) — SELESAI 25 Nov ~13:47 WIB, commit edbefad. index.html + styles.css + game.js terpisah, leaderboard all-time+harian Top 10, booth mode 15 dtk, board monitor ?board=1, docs METHODOLOGY + AI-WORKFLOW-STORY. Live root terverifikasi HTTP 200.
 - Catatan 25 Nov 13:40 WIB: agen pembangun pertama TERTAHAN oleh peringatan risiko eksekusi yang salah sasaran saat cek repo. Agen utama verifikasi langsung (git status/log, ls): repo bersih, hanya berisi file bikinan kita sendiri (prototype vanilla HTML/CSS/JS + README + LICENSE + BRIEF), tidak ada yang mencurigakan. Lanjut bangun ulang dengan agen baru + otorisasi eksplisit ini.
 - [ ] Video demo maks 3 menit (YouTube, akun Pojok Kanan)
 - [ ] Bonus: AI-Powered Workflow Story (case study singkat di repo)
