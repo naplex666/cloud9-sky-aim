@@ -102,7 +102,7 @@ body.booth .booth-only { display: block; }
   border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px;
   padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
 }
-.link-btn.danger { border-color: rgba(255, 107, 107, .7); color: #ffb3b3; }
+.link-btn.danger { border-color: rgba(255, 107, 107, .7); color: #ffb3b3; min-width: 290px; }
 .link-btn.danger.armed { background: #c0392b; border-color: #fff; color: #fff; }
 
 .boards { display: flex; gap: 10px; width: 100%; max-width: 460px; }
