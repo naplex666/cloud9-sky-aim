@@ -19,7 +19,7 @@ Category 3: Event Mini Game
 - Demo jalan: https://naplex666.github.io/cloud9-sky-aim/
 - Booth mode: https://naplex666.github.io/cloud9-sky-aim/?booth=1
 - Leaderboard monitor: https://naplex666.github.io/cloud9-sky-aim/?board=1
-- Video demo: (YouTube, isi sesudah upload — channel Pojok Kanan)
+- Video demo: https://youtu.be/C2oIyiykV-I (YouTube, publik, channel Pojok Kanan, 86 dtk, bersuara — upload 25 Nov 18:02 WIB)
 - Bonus AI Workflow Story: https://github.com/naplex666/cloud9-sky-aim/blob/main/docs/AI-WORKFLOW-STORY.md
 
 ## Deskripsi (Devpost)
@@ -62,10 +62,14 @@ Booth mode auto-resets after 15 s of no input. No server, no Wi-Fi needed.
   Tulis di Devpost: "Analyzed and polished with JetBrains WebStorm
   (built-in code inspections, headless inspect.sh)".
 
-## Checklist submit awal
-- [ ] Video demo di YouTube (publik, ≤3 menit, silent + teks) — link dicek live
-- [ ] WebStorm benar-benar dipakai + .idea/.junie ter-commit
-- [ ] Demo link + repo link dicek live dari browser
-- [ ] Deskripsi + methodology + tooling diisi jujur
-- [ ] Kategori 3 dipilih, bonus story link diisi
-- [ ] Submit → cek status submission di Devpost (screenshot/bukti)
+## Checklist submit awal — SELESAI 25 Nov 2026 18:09 WIB
+- [x] Video demo di YouTube (publik, 86 dtk, bersuara) — https://youtu.be/C2oIyiykV-I, link dicek live
+- [x] WebStorm benar-benar dipakai (inspect.sh headless + 4 perbaikan build v5) — laporan di docs/WEBSTORM-INSPECT-REPORT.txt; .idea tidak di-commit (cuma workspace.xml kosong)
+- [x] Demo link + repo link dicek live dari browser
+- [x] Deskripsi + methodology + tooling diisi jujur (Junie/Air = No)
+- [x] Kategori 3 dipilih, bonus story link diisi
+- [x] Submit → https://devpost.com/software/sky-stack-cloud9-booth-game — banner "Project submitted!" terverifikasi langsung 18:09 WIB
+
+## Rencana submit ulang (dekat deadline 13 Jan 2027 02:00 WIB)
+- Begitu kode trial Devpost sampai (~2 Des): buka proyek di GUI WebStorm, polish + coba Junie/Air, update methodology/tooling jujur.
+- Perbaiki/tingkatkan game bila ada temuan baru; submit ulang (edit entry yang sama).
