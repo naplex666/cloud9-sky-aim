@@ -56,7 +56,7 @@ let muted = false;
 try { muted = localStorage.getItem(MUTE_KEY) === "1"; } catch (e) { muted = false; }
 function paintMute() { btnMute.innerHTML = muted ? "&#128263;" : "&#128266;"; }
 function ensureAudio() {
-  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; } }
+  if (!audioCtx) { try { const AC = window.AudioContext || window["webkitAudioContext"]; audioCtx = AC ? new AC() : null; } catch (e) { audioCtx = null; } }
   if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
 }
 function beep(freq, durMs, type, vol) {
@@ -234,10 +234,10 @@ function spawnMoving() {
   moving = { x: dir > 0 ? 0 : W - w, y: topY() - BLOCK_H - 4, w, dir, speed: curSpeed() };
 }
 function updateHud() {
-  hudScore.textContent = score;
-  hudHeight.textContent = height;
+  hudScore.textContent = String(score);
+  hudHeight.textContent = String(height);
   hudPerfect.textContent = perfectStreak + "\u00d7";
-  hudBest.textContent = Math.max(bestScore(), score);
+  hudBest.textContent = String(Math.max(bestScore(), score));
 }
 
 /* ---------- Booth mode: auto-reset 15 detik ---------- */
@@ -444,7 +444,7 @@ function drawCloud(cx, cy, s, alpha) {
   ctx.arc(cx + 18 * s, cy + 5 * s, 14 * s, 0, Math.PI * 2);
   ctx.fill();
 }
-function blockFill(i, x, y, w) {
+function blockFill(i, x, y) {
   const pair = PALETTE[i % PALETTE.length];
   const g = ctx.createLinearGradient(x, y, x, y + BLOCK_H);
   g.addColorStop(0, pair[0]);
@@ -454,7 +454,7 @@ function blockFill(i, x, y, w) {
 function drawBlock(b, i, isMoving) {
   const sy = b.y - camY;
   if (sy > H + 40 || sy < -60) return;
-  ctx.fillStyle = blockFill(i, b.x, sy, b.w);
+  ctx.fillStyle = blockFill(i, b.x, sy);
   rr(b.x, sy, b.w, BLOCK_H, 5);
   ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.35)";

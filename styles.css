@@ -112,7 +112,6 @@ body.booth .booth-only { display: block; }
 .board ol { list-style: none; text-align: left; font-size: 15px; max-height: 220px; overflow-y: auto; }
 .board li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed rgba(255, 255, 255, .15); }
 .board li:last-child { border-bottom: none; }
-.board li.me { color: var(--gold); font-weight: 800; }
 .board .empty { color: var(--mist); font-size: 13px; text-align: center; }
 .daily-line { color: var(--mist); font-size: 12px; margin-top: 6px; }
 

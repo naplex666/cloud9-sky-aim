@@ -54,19 +54,27 @@ Suara dibuat dengan WebAudio (tanpa file audio eksternal), mute tersimpan.
 
 ## Tooling (JetBrains) — jujur
 Persyaratan lomba: proyek dibangun memakai minimal satu tool JetBrains.
-Status saat dokumen ini ditulis (25 Nov 2026):
-- **Pendaftaran Devpost selesai 25 Nov 2026** (solo, pojokkanan29). Kode trial
-  JetBrains (All Products Pack + AI Ultimate) dikirim lewat email **maksimal
-  5 hari kerja sesudah daftar** — jadi saat build produksi ini ditulis, kode
-  tersebut **belum sampai** dan belum dipakai. Kami tidak mengklaim pemakaian
-  yang belum terjadi.
-- **Rencana pemakaian konkret begitu kode tiba:** buka repo ini di **WebStorm**
-  (IDE JetBrains untuk web) dan lanjutkan pengembangan di sana — refactor,
-  debug, dan polish final — dengan **Junie** (AI coding agent JetBrains)
-  dan/atau **JetBrains Air** untuk review perubahan dan tugas-tugas kecil.
-  Folder `.idea` / `.junie` akan di-commit sebagai bukti pemakaian begitu
-  WebStorm benar-benar dipakai; folder itu **sengaja tidak dibuat palsu**
-  sebelum waktunya.
+Pemakaian yang benar-benar terjadi (25 Nov 2026):
+- **WebStorm 2026.3.0.1 dipakai untuk analisis statis repo ini** lewat
+  `inspect.sh` (headless, profil SkyStack: unresolved/unused/duplicate
+  symbols dan pemeriksaan bawaan lain). Inspeksi menemukan temuan nyata;
+  4 temuan produksi diperbaiki di build v5 — `game.js`: fallback
+  `webkitAudioContext` ditulis ulang (bracket notation), nilai HUD dibungkus
+  `String()`, parameter `w` yang tak terpakai dihapus dari `blockFill`;
+  `styles.css`: selector `.board li.me` yang mati dihapus. Tiga temuan
+  "unused selector" lain diverifikasi sebagai false positive (class
+  dipakai dinamis dari JS: `.armed`, `.empty`, `#debug.on`) dan dibiarkan.
+  Laporan lengkap: `docs/WEBSTORM-INSPECT-REPORT.txt`.
+- **GUI WebStorm sempat dibuka** (dialog User Agreement muncul di Xvfb),
+  tapi prosesnya mati 2x sesudah klik Continue di VM ini — diduga kehabisan
+  memori — jadi inspeksi headless yang dipakai. Folder `.idea` / `.junie`
+  **sengaja tidak dibuat palsu**; folder itu di-commit hanya begitu
+  WebStorm GUI benar-benar dipakai.
+- **Kode trial Devpost** (All Products Pack + AI Ultimate, 2 bulan) belum
+  sampai saat dokumen ini ditulis — dikirim email maksimal 5 hari kerja
+  sesudah pendaftaran 25 Nov 2026 (s.d. ~2 Des). Begitu sampai, proyek
+  dibuka di GUI WebStorm untuk polish lanjutan.
+- **Junie dan JetBrains Air belum dipakai** — tidak diklaim di mana pun.
 - Build produksi ini ditulis sebagai vanilla HTML/CSS/JS tanpa build step,
   jadi pindah ke WebStorm nanti tidak butuh perubahan arsitektur apa pun.
 

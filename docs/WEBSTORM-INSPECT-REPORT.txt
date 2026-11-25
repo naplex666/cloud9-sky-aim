@@ -1,0 +1,81 @@
+Missing associated label (HTML | Accessibility)
+  Reports a form element (input, textarea, or select) without an associated label. Suggests creating a new label. Based on WCAG 2.0: H44.
+  Inspection ID: HtmlFormInputWithoutLabel
+
+  ./prototypes/sky-aim/index.html:195     [WARNING] Missing associated label
+
+Duplicate 'id' attribute (XML)
+  Reports a duplicate values of the id attribute in XML and HTML.
+  Inspection ID: XmlDuplicatedId
+
+  ./prototypes/sky-aim/index.html:164     [ERROR] Duplicate id reference
+  ./prototypes/sky-aim/index.html:178     [ERROR] Duplicate id reference
+
+Non-integer length in pixels (CSS | Probable bugs)
+  Reports a non-integer length in pixels.
+  Example:
+  width: 3.14px
+  Inspection ID: CssNonIntegerLengthInPixels
+
+  ./prototypes/sky-aim/index.html:61     [WEAK WARNING] Float px values may render differently on different browsers
+
+Unresolved reference (JavaScript and TypeScript | General)
+  Reports an unresolved reference in JavaScript code.
+  Inspection ID: JSUnresolvedReference
+
+  ./prototypes/sky-aim/index.html:253       [WEAK WARNING] Unresolved variable webkitAudioContext
+  ./prototypes/sky-stack/index.html:217     [WEAK WARNING] Unresolved variable webkitAudioContext
+
+JQuery selector can be optimized (JavaScript and TypeScript | General)
+  Reports a duplicated jQuery selector that can be cached or a usage of an attribute or a pseudo-selector (optional).
+  Inspection ID: JSJQueryEfficiency
+
+  ./prototypes/sky-aim/index.html:386     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:387     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:473     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:505     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:506     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:517     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:518     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:522     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:535     [WARNING] Duplicated jQuery selector
+  ./prototypes/sky-aim/index.html:535     [WARNING] Duplicated jQuery selector
+
+Grammar (Proofreading)
+  Reports grammar mistakes in your text. You can configure the inspection in
+  Settings | Editor | Natural Languages | Grammar and Style.
+  Inspection ID: GrazieInspection
+
+  ./prototypes/sky-aim/BRIEF.md:21     [GRAMMAR_ERROR] Did you mean the noun or adjective 'slo-mo' (= 'slow motion')?
+
+Type mismatch (JavaScript and TypeScript | General)
+  Reports incorrect type of:
+  a parameter in a function call
+  a return value
+  an assigned expression
+  TypeScript code is ignored.
+  Inspection ID: JSValidateTypes
+
+  ./prototypes/sky-stack/index.html:382     [WEAK WARNING] <html>Assigned expression type <code><span style="color:#000080;">number</span></code> is not assignable to type <code><span style="color:#000080;">string</span></code></html>
+
+Unused selector (CSS)
+  Reports a CSS class or an element IDs that appears in selectors but is not used in HTML.
+  Note that complete inspection results are available only when running it via Code | Inspect Code or
+  Code | Analyze Code | Run Inspection by Name.
+  Due to performance reasons, style sheet files are not inspected on the fly.
+  Inspection ID: CssUnusedSymbol
+
+  ./prototypes/sky-aim/index.html:84       [WARNING] Selector go is never used
+  ./prototypes/sky-aim/index.html:88       [WARNING] Selector dot is never used
+  ./prototypes/sky-aim/index.html:89       [WARNING] Selector dot is never used
+  ./prototypes/sky-aim/index.html:89       [WARNING] Selector done is never used
+  ./prototypes/sky-aim/index.html:90       [WARNING] Selector dot is never used
+  ./prototypes/sky-aim/index.html:90       [WARNING] Selector now is never used
+  ./prototypes/sky-aim/index.html:106      [WARNING] Selector me is never used
+  ./prototypes/sky-aim/index.html:107      [WARNING] Selector empty is never used
+  ./prototypes/sky-stack/index.html:86     [WARNING] Selector empty is never used
+  ./prototypes/sky-stack/index.html:99     [WARNING] Selector on is never used
+  ./styles.css:106                         [WARNING] Selector armed is never used
+  ./styles.css:115                         [WARNING] Selector empty is never used
+  ./styles.css:131                         [WARNING] Selector on is never used
+
