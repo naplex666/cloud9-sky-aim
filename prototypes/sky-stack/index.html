@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sky Stack — Cloud9 Booth Game</title>
+<style>
+  :root {
+    --navy: #0B1E3A;
+    --sky: #00A8E8;
+    --sky-dark: #0091DA;
+    --ink: #0B1E3A;
+    --paper: #FFFFFF;
+    --gold: #FFC53D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(180deg, #071426 0%, #0B1E3A 55%, #123a5c 100%);
+    color: var(--paper);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  header { text-align: center; padding: 12px 8px 4px; }
+  header h1 { font-size: clamp(26px, 6vw, 40px); letter-spacing: 2px; line-height: 1; }
+  header h1 .sky { color: var(--sky); }
+  header p { color: #BFE6F7; font-size: 13px; margin-top: 4px; }
+  #game-wrap {
+    position: relative;
+    width: min(520px, 96vw);
+    margin-top: 8px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  canvas { display: block; width: 100%; height: 620px; background: #0B1E3A; }
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 10px 12px; pointer-events: none;
+    font-weight: 700; text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  }
+  #hud .stat { text-align: center; }
+  #hud .stat .label { font-size: 10px; letter-spacing: 1px; color: #BFE6F7; }
+  #hud .stat .value { font-size: 24px; line-height: 1.1; }
+  #hud .stat .value.small { font-size: 18px; }
+  #btn-mute {
+    pointer-events: auto;
+    background: rgba(11, 30, 58, 0.7); color: #fff;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 999px;
+    padding: 6px 10px; font-size: 14px; cursor: pointer;
+  }
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; text-align: center; padding: 20px;
+    background: rgba(7, 20, 38, 0.82);
+    backdrop-filter: blur(2px);
+  }
+  .overlay.hidden { display: none; }
+  .overlay h2 { font-size: clamp(28px, 7vw, 40px); letter-spacing: 2px; }
+  .overlay h2 .sky { color: var(--sky); }
+  .overlay .tagline { color: #BFE6F7; font-size: 14px; max-width: 340px; line-height: 1.5; }
+  .overlay .big-score { font-size: 52px; font-weight: 800; line-height: 1; color: var(--gold); }
+  .overlay .sub { color: #BFE6F7; font-size: 14px; }
+  .btn {
+    background: var(--sky); color: #fff; border: none; border-radius: 999px;
+    padding: 14px 42px; font-size: 20px; font-weight: 800; letter-spacing: 1px;
+    cursor: pointer; box-shadow: 0 6px 0 var(--sky-dark), 0 10px 24px rgba(0,0,0,0.4);
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--sky-dark); }
+  .btn.secondary { background: #1E7FB8; box-shadow: 0 6px 0 #155a83, 0 10px 24px rgba(0,0,0,0.4); font-size: 16px; padding: 10px 28px; }
+  .board { width: 100%; max-width: 320px; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 14px; }
+  .board h3 { font-size: 12px; letter-spacing: 2px; color: #BFE6F7; margin-bottom: 6px; }
+  .board ol { list-style: none; text-align: left; font-size: 15px; }
+  .board li { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+  .board li:last-child { border-bottom: none; }
+  .board .empty { color: #BFE6F7; font-size: 13px; text-align: center; }
+  #initials-row { display: flex; gap: 8px; align-items: center; justify-content: center; }
+  #initials-row.hidden { display: none; }
+  #initials {
+    width: 96px; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 6px;
+    text-transform: uppercase; padding: 8px 6px; border-radius: 10px;
+    border: 2px solid var(--sky); background: #fff; color: var(--ink);
+  }
+  #debug {
+    display: none; position: absolute; left: 8px; bottom: 8px;
+    background: rgba(0,0,0,0.65); color: #9dff9d; font: 11px monospace;
+    padding: 6px 8px; border-radius: 6px; white-space: pre; pointer-events: none;
+  }
+  #debug.on { display: block; }
+  footer { color: #7FA8C4; font-size: 11px; padding: 10px 12px 16px; text-align: center; max-width: 520px; }
+  .cloud { font-size: 34px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SKY <span class="sky">STACK</span></h1>
+  <p>Cloud9 booth game &mdash; satu tombol, timing sempurna, menara setinggi langit.</p>
+</header>
+
+<div id="game-wrap">
+  <canvas id="game" width="520" height="620"></canvas>
+
+  <div id="hud">
+    <div class="stat"><div class="label">SKOR</div><div class="value" id="hud-score">0</div></div>
+    <div class="stat"><div class="label">TINGGI</div><div class="value" id="hud-height">0</div></div>
+    <div class="stat"><div class="label">PERFECT</div><div class="value small" id="hud-perfect">0&times;</div></div>
+    <div class="stat"><div class="label">BEST</div><div class="value small" id="hud-best">0</div></div>
+    <button id="btn-mute" type="button" aria-label="Suara">&#128266;</button>
+  </div>
+
+  <div id="screen-start" class="overlay">
+    <div class="cloud">&#9729;&#65039;</div>
+    <h2>SKY <span class="sky">STACK</span></h2>
+    <p class="tagline">Klik / ketuk / Spasi saat blok tepat di atas menara. Perfect = blok tidak mengecil. Meleset total = jatuh.</p>
+    <button id="btn-start" class="btn" type="button">MULAI</button>
+    <div class="board">
+      <h3>TOP 5 &mdash; BOOTH LEADERBOARD</h3>
+      <ol id="board-start"></ol>
+    </div>
+    <p class="sub">Satu run ideal di bawah 2 menit. Skor tersimpan lokal, tanpa Wi-Fi.</p>
+  </div>
+
+  <div id="screen-over" class="overlay hidden">
+    <h2>GAME <span class="sky">OVER</span></h2>
+    <div class="big-score" id="final-score">0</div>
+    <p class="sub" id="final-detail">Tinggi 0 &middot; Perfect 0</p>
+    <div id="initials-row">
+      <input id="initials" type="text" maxlength="3" placeholder="ABC" autocomplete="off" aria-label="Inisial 3 huruf">
+      <button id="btn-save" class="btn secondary" type="button">SIMPAN</button>
+    </div>
+    <div class="board">
+      <h3>TOP 5 &mdash; BOOTH LEADERBOARD</h3>
+      <ol id="board-over"></ol>
+    </div>
+    <button id="btn-again" class="btn" type="button">MAIN LAGI</button>
+  </div>
+
+  <div id="debug"></div>
+</div>
+
+<footer>Prototype v1 &middot; Cloud9 x JetBrains: Sky&rsquo;s The Limit &middot; Kategori 3 Event Mini Game &middot; Aset &amp; nama original, tanpa aset Riot.</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   SKY STACK — prototype v1 (throwaway, greybox)
+   Tuning constants: ubah satu nilai di sini untuk retune.
+   ============================================================ */
+const BLOCK_H = 26;               // tinggi tiap blok (px)
+const BLOCK_W_START = 220;        // lebar blok pertama (px)
+const BLOCK_SPEED_START = 180;    // kecepatan blok melayang awal (px/detik)
+const SPEED_INCREASE = 12;        // tambah kecepatan per lantai (px/detik)
+const SPEED_MAX = 520;            // kecepatan maksimum (px/detik)
+const PERFECT_WINDOW_PX = 8;      // |offset| <= ini = Perfect (snap, tanpa potong)
+const SCORE_BLOCK = 10;           // poin per blok yang berhasil diletak
+const SCORE_PERFECT_BONUS = 10;   // bonus poin per Perfect
+const GRAVITY = 1400;             // gravitasi potongan jatuh (px/detik^2)
+const CAMERA_ANCHOR = 0.30;       // posisi vertikal puncak menara di layar (0..1)
+const GROUND_MARGIN = 24;         // jarak garis tanah dari bawah canvas (px)
+const BOARD_KEY = "skystack_board_v1";
+const BOARD_MAX = 5;
+
+/* ---------- DOM ---------- */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const hudScore = document.getElementById("hud-score");
+const hudHeight = document.getElementById("hud-height");
+const hudPerfect = document.getElementById("hud-perfect");
+const hudBest = document.getElementById("hud-best");
+const btnMute = document.getElementById("btn-mute");
+const screenStart = document.getElementById("screen-start");
+const screenOver = document.getElementById("screen-over");
+const finalScore = document.getElementById("final-score");
+const finalDetail = document.getElementById("final-detail");
+const initialsRow = document.getElementById("initials-row");
+const initialsInput = document.getElementById("initials");
+const btnSave = document.getElementById("btn-save");
+const btnStart = document.getElementById("btn-start");
+const btnAgain = document.getElementById("btn-again");
+const boardStart = document.getElementById("board-start");
+const boardOver = document.getElementById("board-over");
+const debugEl = document.getElementById("debug");
+const DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+if (DEBUG) debugEl.classList.add("on");
+
+/* ---------- Ukuran canvas (CSS px, DPR-aware) ---------- */
+let W = 520, H = 620, DPR = 1;
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  W = Math.max(280, rect.width);
+  H = Math.max(420, rect.height);
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // Posisikan ulang menara relatif terhadap tanah baru.
+  const groundY = ground();
+  for (let i = 0; i < tower.length; i++) tower[i].y = groundY - BLOCK_H * (i + 1);
+  if (moving) moving.y = topY() - BLOCK_H - 4;
+}
+window.addEventListener("resize", resize);
+function ground() { return H - GROUND_MARGIN; }
+
+/* ---------- Audio (WebAudio, tanpa file) ---------- */
+let audioCtx = null, muted = false;
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; } }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+function beep(freq, durMs, type, vol) {
+  if (muted || !audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.12, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMs / 1000);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + durMs / 1000);
+  } catch (e) { /* suara opsional, jangan matikan game */ }
+}
+function sfxPlace() { beep(440, 90, "sine", 0.12); }
+function sfxPerfect() { beep(660, 90, "sine", 0.12); setTimeout(function () { beep(880, 140, "sine", 0.12); }, 70); }
+function sfxOver() { beep(220, 220, "sawtooth", 0.08); setTimeout(function () { beep(147, 320, "sawtooth", 0.08); }, 160); }
+btnMute.addEventListener("click", function (e) {
+  e.stopPropagation();
+  muted = !muted;
+  btnMute.innerHTML = muted ? "&#128263;" : "&#128266;";
+});
+
+/* ---------- Leaderboard lokal ---------- */
+function loadBoard() {
+  try { return JSON.parse(localStorage.getItem(BOARD_KEY) || "[]"); } catch (e) { return []; }
+}
+function saveBoard(board) {
+  try { localStorage.setItem(BOARD_KEY, JSON.stringify(board)); } catch (e) { /* storage penuh/blokir: main tetap jalan */ }
+}
+function qualifies(score) {
+  if (score <= 0) return false;
+  const b = loadBoard();
+  return b.length < BOARD_MAX || score > b[b.length - 1].score;
+}
+function addEntry(name, score, height) {
+  const b = loadBoard();
+  b.push({ name: name, score: score, height: height, date: Date.now() });
+  b.sort(function (a, b2) { return b2.score - a.score; });
+  const top = b.slice(0, BOARD_MAX);
+  saveBoard(top);
+  return top;
+}
+function bestScore() { const b = loadBoard(); return b.length ? b[0].score : 0; }
+function renderBoard(listEl) {
+  const b = loadBoard();
+  if (!b.length) { listEl.innerHTML = '<li class="empty">Belum ada skor &mdash; jadilah yang pertama!</li>'; return; }
+  listEl.innerHTML = b.map(function (e, i) {
+    return "<li><span>" + (i + 1) + ". " + escapeHtml(e.name) + "</span><span>" + e.score + " pts &middot; " + e.height + " lantai</span></li>";
+  }).join("");
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+/* ---------- State game ---------- */
+const PALETTE = ["#00A8E8", "#FFFFFF", "#4DB8E8", "#0091DA", "#BFE6F7", "#1E7FB8", "#7CCBF2", "#E8F6FD"];
+let state = "attract";           // attract | playing | over
+let tower = [];                  // {x, y, w} dari bawah ke atas (world coords)
+let moving = null;               // {x, y, w, dir, speed}
+let falling = [];                // potongan jatuh {x, y, w, vy}
+let popups = [];                 // {x, y, text, life, color} (world coords)
+let score = 0, height = 0, perfectCount = 0, perfectStreak = 0;
+let camY = 0, camTarget = 0;
+let overTimer = null, savedThisRun = false;
+let fpsEMA = 60, lastT = 0;
+let clouds = [];
+for (let i = 0; i < 6; i++) clouds.push({ x: Math.random() * 520, y: 20 + Math.random() * 200, s: 0.6 + Math.random() * 0.9, v: 6 + Math.random() * 10 });
+
+function topBlock() { return tower[tower.length - 1]; }
+function topY() { return tower.length ? topBlock().y : ground(); }
+function curSpeed() { return Math.min(SPEED_MAX, BLOCK_SPEED_START + height * SPEED_INCREASE); }
+
+function newGame() {
+  tower = [];
+  falling = [];
+  popups = [];
+  score = 0; height = 0; perfectCount = 0; perfectStreak = 0;
+  camY = 0; camTarget = 0;
+  savedThisRun = false;
+  const w0 = Math.min(BLOCK_W_START, W * 0.55);
+  tower.push({ x: (W - w0) / 2, y: ground() - BLOCK_H, w: w0 });
+  spawnMoving();
+  state = "playing";
+  screenStart.classList.add("hidden");
+  screenOver.classList.add("hidden");
+  updateHud();
+}
+
+function spawnMoving() {
+  const prev = topBlock();
+  const w = prev.w;
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  const x = dir > 0 ? 0 : W - w;
+  moving = { x: x, y: topY() - BLOCK_H - 4, w: w, dir: dir, speed: curSpeed() };
+}
+
+function drop() {
+  if (state !== "playing" || !moving) return;
+  ensureAudio();
+  const prev = topBlock();
+  const m = moving;
+  const offset = m.x - prev.x;
+  const left = Math.max(m.x, prev.x);
+  const right = Math.min(m.x + m.w, prev.x + prev.w);
+  const overlap = right - left;
+
+  if (overlap <= 0) {
+    // Meleset total: blok jatuh, game over.
+    falling.push({ x: m.x, y: m.y, w: m.w, vy: 0 });
+    moving = null;
+    perfectStreak = 0;
+    sfxOver();
+    state = "over";
+    updateHud();
+    overTimer = setTimeout(showGameOver, 650);
+    return;
+  }
+
+  let placed;
+  if (Math.abs(offset) <= PERFECT_WINDOW_PX) {
+    // Perfect: snap, lebar utuh.
+    placed = { x: prev.x, y: topY() - BLOCK_H, w: prev.w };
+    perfectCount++;
+    perfectStreak++;
+    score += SCORE_BLOCK + SCORE_PERFECT_BONUS;
+    popups.push({ x: placed.x + placed.w / 2, y: placed.y - 6, text: perfectStreak > 1 ? "PERFECT x" + perfectStreak : "PERFECT!", life: 1, color: "#FFC53D" });
+    sfxPerfect();
+  } else {
+    // Potong: hanya bagian yang menumpuk yang bertahan.
+    placed = { x: left, y: topY() - BLOCK_H, w: overlap };
+    const cutW = m.w - overlap;
+    if (cutW > 0) {
+      const cutX = offset > 0 ? right : m.x; // sisi yang terpotong
+      falling.push({ x: cutX, y: placed.y, w: cutW, vy: 0 });
+    }
+    perfectStreak = 0;
+    score += SCORE_BLOCK;
+    popups.push({ x: placed.x + placed.w / 2, y: placed.y - 6, text: "+" + SCORE_BLOCK, life: 1, color: "#FFFFFF" });
+    sfxPlace();
+  }
+  tower.push(placed);
+  height++;
+  moving = null;
+  camTarget = Math.min(0, topY() - H * CAMERA_ANCHOR);
+  updateHud();
+  spawnMoving();
+}
+
+function showGameOver() {
+  if (state !== "over") return;
+  finalScore.textContent = score;
+  finalDetail.textContent = "Tinggi " + height + " lantai \u00b7 Perfect " + perfectCount + " \u00b7 Best " + Math.max(bestScore(), score);
+  initialsRow.classList.toggle("hidden", !qualifies(score));
+  initialsInput.value = "";
+  renderBoard(boardOver);
+  screenOver.classList.remove("hidden");
+}
+
+function updateHud() {
+  hudScore.textContent = score;
+  hudHeight.textContent = height;
+  hudPerfect.textContent = perfectStreak + "\u00d7";
+  hudBest.textContent = Math.max(bestScore(), score);
+}
+
+/* ---------- Input: satu tombol ---------- */
+canvas.addEventListener("pointerdown", function (e) {
+  e.preventDefault();
+  if (state === "playing") drop();
+});
+window.addEventListener("keydown", function (e) {
+  if (e.code === "Space" || e.code === "Enter") {
+    if (document.activeElement === initialsInput) return; // biarkan ketik inisial
+    e.preventDefault();
+    if (state === "attract") { ensureAudio(); newGame(); }
+    else if (state === "playing") drop();
+    else if (state === "over" && screenOver.classList.contains("hidden")) { /* tunggu overlay */ }
+  }
+});
+btnStart.addEventListener("click", function () { ensureAudio(); newGame(); });
+btnAgain.addEventListener("click", function () { ensureAudio(); newGame(); });
+btnSave.addEventListener("click", function () {
+  if (savedThisRun) return;
+  const name = (initialsInput.value || "YOU").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "YOU";
+  addEntry(name, score, height);
+  savedThisRun = true;
+  initialsRow.classList.add("hidden");
+  renderBoard(boardOver);
+  updateHud();
+  btnAgain.focus();
+});
+
+/* ---------- Gambar ---------- */
+function rr(x, y, w, h, r) {
+  r = Math.min(r, h / 2, w / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function drawCloud(cx, cy, s) {
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 16 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 18 * s, cy - 6 * s, 13 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 36 * s, cy, 15 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 18 * s, cy + 5 * s, 14 * s, 0, Math.PI * 2);
+  ctx.fill();
+}
+function draw(dt) {
+  // Langit.
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#0B1E3A");
+  g.addColorStop(0.55, "#155A83");
+  g.addColorStop(1, "#1E7FB8");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // Awan latar (parallax ringan, posisi layar).
+  for (const c of clouds) {
+    c.x += c.v * dt;
+    if (c.x - 60 * c.s > W) c.x = -60 * c.s;
+    drawCloud(c.x, c.y, c.s);
+  }
+
+  // Garis tanah.
+  const gy = ground() - camY;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+
+  // Menara.
+  for (let i = 0; i < tower.length; i++) {
+    const b = tower[i];
+    const sy = b.y - camY;
+    if (sy > H + 40 || sy < -60) continue;
+    ctx.fillStyle = PALETTE[i % PALETTE.length];
+    rr(b.x, sy, b.w, BLOCK_H, 5);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(b.x + 4, sy + 3, b.w - 8, 4);
+    ctx.strokeStyle = "rgba(11,30,58,0.45)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Blok yang sedang bergerak + garis panduan.
+  if (moving && state === "playing") {
+    const my = moving.y - camY;
+    ctx.save();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = "rgba(255,255,255,0.4)";
+    ctx.beginPath();
+    ctx.moveTo(moving.x + moving.w / 2, my + BLOCK_H);
+    ctx.lineTo(moving.x + moving.w / 2, topY() - camY);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = PALETTE[height % PALETTE.length];
+    rr(moving.x, my, moving.w, BLOCK_H, 5);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(moving.x + 4, my + 3, moving.w - 8, 4);
+    ctx.strokeStyle = "#FFC53D";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Potongan jatuh.
+  for (const f of falling) {
+    const fy = f.y - camY;
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    rr(f.x, fy, f.w, BLOCK_H, 5);
+    ctx.fill();
+  }
+
+  // Popup skor.
+  ctx.textAlign = "center";
+  ctx.font = "800 18px system-ui, sans-serif";
+  for (const p of popups) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.fillText(p.text, p.x, p.y - camY);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- Loop utama ---------- */
+function loop(t) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, lastT ? (t - lastT) / 1000 : 0.016);
+  lastT = t;
+  if (dt > 0) fpsEMA = fpsEMA * 0.95 + (1 / dt) * 0.05;
+
+  if (state === "playing" && moving) {
+    moving.x += moving.dir * moving.speed * dt;
+    if (moving.x <= 0) { moving.x = 0; moving.dir = 1; }
+    if (moving.x + moving.w >= W) { moving.x = W - moving.w; moving.dir = -1; }
+  }
+  // Kamera mengikuti puncak menara dengan halus.
+  camY += (camTarget - camY) * Math.min(1, dt * 6);
+  // Potongan jatuh.
+  for (let i = falling.length - 1; i >= 0; i--) {
+    const f = falling[i];
+    f.vy += GRAVITY * dt;
+    f.y += f.vy * dt;
+    if (f.y - camY > H + 80) falling.splice(i, 1);
+  }
+  // Popup naik & memudar.
+  for (let i = popups.length - 1; i >= 0; i--) {
+    const p = popups[i];
+    p.y -= 34 * dt;
+    p.life -= dt * 1.4;
+    if (p.life <= 0) popups.splice(i, 1);
+  }
+
+  draw(dt);
+
+  if (DEBUG) {
+    debugEl.textContent =
+      "state=" + state +
+      "  speed=" + (moving ? moving.speed.toFixed(0) : "-") + " px/s" +
+      "  w=" + (moving ? moving.w.toFixed(0) : (tower.length ? topBlock().w.toFixed(0) : "-")) +
+      "  fps=" + fpsEMA.toFixed(0) +
+      "\nheight=" + height + "  score=" + score +
+      "  perfect=" + perfectCount + "  streak=" + perfectStreak +
+      "  camY=" + camY.toFixed(0) + "  falling=" + falling.length;
+  }
+}
+
+/* ---------- Init ---------- */
+resize();
+renderBoard(boardStart);
+renderBoard(boardOver);
+updateHud();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

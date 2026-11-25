@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SKY AIM — Cloud9 Booth Flick &amp; Reaction Trainer (Prototype v1)</title>
+<style>
+  :root{
+    --navy:#0B1E3A; --navy2:#12294d; --sky:#00A8E8; --sky2:#4fc3f7;
+    --white:#ffffff; --ink:#eaf4ff; --muted:#9db8d6; --gold:#ffd54a;
+    --green:#2ee06f; --red:#ff5252;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--navy); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    display:flex; flex-direction:column; align-items:center; overflow-x:hidden;
+    user-select:none;
+  }
+  /* langit + awan CSS murni (aset original, tanpa gambar eksternal) */
+  .sky{position:fixed; inset:0; z-index:-1; overflow:hidden;
+    background:linear-gradient(180deg,#0B1E3A 0%,#0e2a52 55%,#123a6b 100%);}
+  .cloud{position:absolute; background:rgba(255,255,255,.10); border-radius:999px;
+    animation:drift linear infinite;}
+  .cloud::before,.cloud::after{content:""; position:absolute; background:rgba(255,255,255,.10); border-radius:50%;}
+  .cloud.c1{width:180px;height:52px;top:12%;left:-200px;animation-duration:70s;}
+  .cloud.c1::before{width:70px;height:70px;top:-32px;left:28px;}
+  .cloud.c1::after{width:50px;height:50px;top:-20px;left:95px;}
+  .cloud.c2{width:130px;height:40px;top:32%;left:-160px;animation-duration:95s;animation-delay:-40s;}
+  .cloud.c2::before{width:55px;height:55px;top:-26px;left:22px;}
+  .cloud.c2::after{width:38px;height:38px;top:-16px;left:70px;}
+  .cloud.c3{width:220px;height:60px;top:68%;left:-240px;animation-duration:110s;animation-delay:-70s;}
+  .cloud.c3::before{width:80px;height:80px;top:-36px;left:40px;}
+  .cloud.c3::after{width:58px;height:58px;top:-24px;left:120px;}
+  @keyframes drift{from{transform:translateX(0)}to{transform:translateX(120vw)}}
+
+  header{width:100%; max-width:920px; display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px 6px;}
+  .logo{font-weight:900; letter-spacing:.14em; font-size:22px;}
+  .logo b{color:var(--sky);}
+  .logo small{display:block; font-size:10px; letter-spacing:.28em; color:var(--muted); font-weight:600;}
+  .iconbtn{background:var(--navy2); color:var(--ink); border:1px solid #2a4a75; border-radius:10px;
+    padding:9px 12px; font-size:15px; cursor:pointer;}
+  .iconbtn:hover{border-color:var(--sky);}
+
+  main{width:100%; max-width:920px; padding:6px 16px 24px; flex:1; display:flex; flex-direction:column;}
+  .screen{display:none; flex-direction:column; gap:14px; align-items:center; text-align:center;}
+  .screen.active{display:flex;}
+  h1{font-size:clamp(38px,8vw,64px); line-height:.95; font-weight:900; letter-spacing:.02em;}
+  h1 span{color:var(--sky);}
+  .tag{color:var(--muted); font-size:15px; max-width:560px; line-height:1.5;}
+  .bigbtn{background:var(--sky); color:#04263d; border:none; border-radius:14px;
+    font-size:20px; font-weight:800; padding:16px 34px; cursor:pointer; min-width:280px;}
+  .bigbtn:hover{background:var(--sky2);}
+  .bigbtn.secondary{background:var(--navy2); color:var(--ink); border:2px solid var(--sky); font-size:17px; padding:13px 28px;}
+  .bigbtn.ghost{background:transparent; color:var(--muted); border:1px solid #2a4a75; font-size:15px; padding:10px 22px; min-width:0;}
+  .modes{display:flex; flex-direction:column; gap:10px; width:100%; max-width:420px;}
+  .modecard{background:rgba(255,255,255,.06); border:1px solid #24456f; border-radius:14px; padding:14px; text-align:left;}
+  .modecard h3{font-size:17px; margin-bottom:4px;}
+  .modecard p{color:var(--muted); font-size:13.5px; line-height:1.45;}
+  .modecard .play{margin-top:10px; width:100%;}
+  .howto{color:var(--muted); font-size:13px; line-height:1.5; max-width:520px;}
+  .howto b{color:var(--ink);}
+
+  /* HUD */
+  .hud{display:none; width:100%; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:10px;}
+  .hud.on{display:grid;}
+  .stat{background:rgba(255,255,255,.06); border:1px solid #24456f; border-radius:10px; padding:8px 4px;}
+  .stat .v{font-size:clamp(17px,3.5vw,24px); font-weight:800;}
+  .stat .v.gold{color:var(--gold);}
+  .stat .l{font-size:10px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase;}
+  #arenaWrap{position:relative; width:100%; flex:1; min-height:420px; border-radius:16px; overflow:hidden;
+    border:2px solid #24456f; background:rgba(4,18,38,.55); touch-action:none;}
+  #arena{position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair; touch-action:none;}
+  .centerMsg{position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
+    align-items:center; justify-content:center; pointer-events:none; padding:20px;}
+  .centerMsg .big{font-size:clamp(28px,6vw,44px); font-weight:900;}
+  .centerMsg .sub{color:var(--muted); font-size:15px;}
+  #reactPanel{position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:12px; cursor:pointer;}
+  #reactPanel.on{display:flex;}
+  #reactPanel.wait{background:#7a1020;}
+  #reactPanel.go{background:#0a7a34;}
+  #reactPanel .big{font-size:clamp(30px,7vw,48px); font-weight:900;}
+  #reactPanel .sub{font-size:16px; opacity:.9;}
+  .roundDots{display:flex; gap:8px; justify-content:center; margin-top:4px;}
+  .dot{width:12px; height:12px; border-radius:50%; background:#24456f;}
+  .dot.done{background:var(--sky);}
+  .dot.now{background:var(--gold);}
+
+  /* Hasil */
+  .scoreBig{font-size:clamp(52px,12vw,84px); font-weight:900; color:var(--gold); line-height:1;}
+  .statsGrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; width:100%; max-width:460px;}
+  .statsGrid .stat{padding:12px 6px;}
+  .initials{display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap;}
+  .initials input{width:110px; text-align:center; font-size:22px; font-weight:800; letter-spacing:.3em;
+    text-transform:uppercase; padding:10px; border-radius:10px; border:2px solid var(--sky);
+    background:var(--navy2); color:var(--ink);}
+  .board{width:100%; max-width:460px; background:rgba(255,255,255,.05); border:1px solid #24456f;
+    border-radius:12px; padding:12px 14px; text-align:left;}
+  .board h3{font-size:13px; letter-spacing:.16em; color:var(--muted); margin-bottom:8px;}
+  .board ol{list-style:none;}
+  .board li{display:flex; justify-content:space-between; padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06); font-size:15px;}
+  .board li:last-child{border-bottom:none;}
+  .board li.me{color:var(--gold); font-weight:700;}
+  .board .empty{color:var(--muted); font-size:14px;}
+
+  #debug{position:fixed; left:8px; bottom:8px; z-index:50; background:rgba(0,0,0,.75); color:#7CFC9A;
+    font:12px/1.5 monospace; padding:8px 10px; border-radius:8px; display:none; white-space:pre;}
+  #debug.on{display:block;}
+  #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#12294d;
+    border:1px solid var(--sky); padding:10px 18px; border-radius:999px; font-size:14px; display:none; z-index:60;}
+  @media (max-width:560px){
+    .hud{grid-template-columns:repeat(3,1fr);}
+    #arenaWrap{min-height:380px;}
+    .bigbtn{min-width:0; width:100%;}
+  }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true">
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+</div>
+
+<header>
+  <div class="logo">SKY<b>AIM</b><small>CLOUD9 BOOTH TRAINER</small></div>
+  <button class="iconbtn" id="muteBtn" title="Suara on/off">🔊 Suara</button>
+</header>
+
+<main>
+  <!-- ============ MENU / ATTRACT ============ -->
+  <section class="screen active" id="screen-menu">
+    <h1>REACH THE<br><span>SKY.</span> HIT FAST.</h1>
+    <p class="tag">Aim trainer booth Cloud9. Satu sesi di bawah 3 menit — klik target secepat dan seakurat mungkin, jaga combo, kejar skor tertinggi hari ini.</p>
+    <div class="modes">
+      <div class="modecard">
+        <h3>⚡ Blitz — 60 detik</h3>
+        <p>Target bermunculan di arena. Makin kecil &amp; cepat kena = makin besar skor. Kena ring dalam = bonus presisi. Miss = combo putus.</p>
+        <button class="bigbtn play" id="btnBlitz">▶ MAIN BLITZ</button>
+      </div>
+      <div class="modecard">
+        <h3>⏱️ Reaction Sprint — 10 ronde</h3>
+        <p>Tunggu layar hijau, lalu klik secepatnya. Jangan klik prematur — false start mengulang ronde.</p>
+        <button class="bigbtn play secondary" id="btnReact">▶ MAIN REACTION</button>
+      </div>
+    </div>
+    <p class="howto"><b>Cara main:</b> klik / tap target saja. Tidak ada tutorial — langsung main. Skor terbaik tersimpan lokal di perangkat ini (tanpa Wi-Fi).</p>
+    <div class="board" id="boardMenu">
+      <h3>🏆 TOP 5 BLITZ — PERANGKAT INI</h3>
+      <ol id="boardMenuList"></ol>
+    </div>
+  </section>
+
+  <!-- ============ BLITZ ============ -->
+  <section class="screen" id="screen-blitz">
+    <div class="hud on">
+      <div class="stat"><div class="v gold" id="hudScore">0</div><div class="l">Skor</div></div>
+      <div class="stat"><div class="v" id="hudTime">60</div><div class="l">Detik</div></div>
+      <div class="stat"><div class="v" id="hudAcc">100%</div><div class="l">Akurasi</div></div>
+      <div class="stat"><div class="v" id="hudCombo">×1.0</div><div class="l">Combo</div></div>
+      <div class="stat"><div class="v" id="hudReact">—</div><div class="l">Reaksi rata2</div></div>
+    </div>
+    <div id="arenaWrap">
+      <canvas id="arena"></canvas>
+      <div class="centerMsg" id="blitzMsg" style="display:none"></div>
+    </div>
+    <button class="bigbtn ghost" id="btnQuitBlitz">✕ Berhenti</button>
+  </section>
+
+  <!-- ============ REACTION ============ -->
+  <section class="screen" id="screen-react">
+    <div class="hud on" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><div class="v" id="reactRound">1 / 10</div><div class="l">Ronde</div></div>
+      <div class="stat"><div class="v" id="reactLast">—</div><div class="l">Terakhir</div></div>
+      <div class="stat"><div class="v gold" id="reactAvg">—</div><div class="l">Rata-rata</div></div>
+    </div>
+    <div id="arenaWrap">
+      <div id="reactPanel" class="wait">
+        <div class="big" id="reactBig">TUNGGU HIJAU…</div>
+        <div class="sub" id="reactSub">Klik begitu layar jadi hijau. Jangan klik duluan!</div>
+        <div class="roundDots" id="reactDots"></div>
+      </div>
+    </div>
+    <button class="bigbtn ghost" id="btnQuitReact">✕ Berhenti</button>
+  </section>
+
+  <!-- ============ HASIL ============ -->
+  <section class="screen" id="screen-result">
+    <h1 id="resultTitle">SELESAI!</h1>
+    <div class="scoreBig" id="resultScore">0</div>
+    <div class="statsGrid" id="resultStats"></div>
+    <div class="initials" id="initialsBox">
+      <span>Inisialmu (3 huruf):</span>
+      <input id="initialsInput" maxlength="3" value="ZEC" autocomplete="off">
+      <button class="bigbtn secondary" id="btnSaveScore" style="min-width:0">💾 Simpan</button>
+    </div>
+    <div class="board">
+      <h3 id="boardResultTitle">🏆 TOP 5 BLITZ — PERANGKAT INI</h3>
+      <ol id="boardResultList"></ol>
+    </div>
+    <button class="bigbtn" id="btnAgain">↻ MAIN LAGI</button>
+    <button class="bigbtn ghost" id="btnMenu">Menu utama</button>
+  </section>
+</main>
+
+<div id="debug"></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ================= TUNING CONSTANTS — ubah satu baris untuk retune ================= */
+const BLITZ_DURATION_MS   = 60000;  // durasi satu sesi Blitz
+const SPAWN_INTERVAL_MS   = 750;    // jeda spawn awal
+const SPAWN_MIN_MS        = 380;    // jeda spawn tercepat (di akhir sesi)
+const TARGET_LIFETIME_MS  = 1150;   // target hilang sendiri sesudah ini
+const TARGET_MIN_R        = 20;     // radius terkecil (target susah)
+const TARGET_MAX_R        = 44;     // radius terbesar (target gampang)
+const MAX_TARGETS         = 3;      // target aktif bersamaan
+const BASE_SCORE          = 100;    // skor dasar per hit
+const PRECISION_BONUS_MAX = 50;     // bonus kena tengah target
+const SPEED_BONUS_MAX     = 50;     // bonus kena cepat sesudah spawn
+const MISS_PENALTY        = 25;     // pengurang saat klik kosong
+const COMBO_STEP          = 0.05;   // +5% skor per combo
+const COMBO_CAP           = 2.0;    // pengali combo maks ×2.0
+const REACTION_ROUNDS     = 10;     // ronde Reaction Sprint
+const REACTION_MIN_WAIT   = 1000;   // jeda acak min sebelum hijau (ms)
+const REACTION_MAX_WAIT   = 3000;   // jeda acak maks sebelum hijau (ms)
+const LB_KEY              = "skyAimBlitzTop5"; // leaderboard localStorage
+const LB_SIZE             = 5;
+/* ===================================================================================== */
+
+const $ = id => document.getElementById(id);
+const DEBUG = new URLSearchParams(location.search).has("debug");
+const screens = { menu: $("screen-menu"), blitz: $("screen-blitz"), react: $("screen-react"), result: $("screen-result") };
+let muted = false, audioCtx = null;
+let mode = "blitz";           // "blitz" | "reaction"
+let lastResult = null;        // {mode, score, ...} untuk layar hasil
+let savedThisRun = false;
+
+function show(name){
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screens[name].classList.add("active");
+}
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.style.display = "block";
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = "none", 2200);
+}
+/* ---------- suara WebAudio, tanpa file eksternal ---------- */
+function beep(freq, dur, type){
+  if (muted) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }catch(e){ /* audio tidak tersedia: game tetap jalan tanpa suara */ }
+}
+$("muteBtn").addEventListener("click", () => {
+  muted = !muted;
+  $("muteBtn").textContent = muted ? "🔇 Senyap" : "🔊 Suara";
+});
+
+/* ---------- leaderboard lokal ---------- */
+function loadBoard(){
+  try{ return JSON.parse(localStorage.getItem(LB_KEY) || "[]"); }catch(e){ return []; }
+}
+function saveBoard(list){ try{ localStorage.setItem(LB_KEY, JSON.stringify(list)); }catch(e){} }
+function qualifies(score){ const b = loadBoard(); return score > 0 && (b.length < LB_SIZE || score > b[b.length-1].score); }
+function renderBoard(ol, highlightIdx){
+  const b = loadBoard();
+  ol.innerHTML = b.length ? "" : '<li><span class="empty">Belum ada skor — jadilah yang pertama!</span></li>';
+  b.forEach((e,i) => {
+    const li = document.createElement("li");
+    if (i === highlightIdx) li.className = "me";
+    li.innerHTML = `<span>${i+1}. ${escapeHtml(e.name)} <small style="color:var(--muted)">· ${e.acc}%</small></span><b>${e.score}</b>`;
+    ol.appendChild(li);
+  });
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+renderBoard($("boardMenuList"), -1);
+
+/* ================= BLITZ ================= */
+const canvas = $("arena"), ctx = canvas.getContext("2d");
+let targets = [], particles = [], raf = null, lastTs = 0, fps = 0;
+let blitz = null; // state sesi Blitz
+
+function resizeCanvas(){
+  const wrap = $("arenaWrap"), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  canvas.width = Math.max(1, w * dpr); canvas.height = Math.max(1, h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  canvas._w = w; canvas._h = h;
+}
+window.addEventListener("resize", resizeCanvas);
+
+function spawnInterval(now){
+  // makin cepat seiring waktu berjalan (ramp kesulitan)
+  const p = blitz ? (now - blitz.startedAt) / BLITZ_DURATION_MS : 0;
+  return SPAWN_INTERVAL_MS - (SPAWN_INTERVAL_MS - SPAWN_MIN_MS) * Math.min(1, p);
+}
+function spawnTarget(now){
+  const r = TARGET_MIN_R + Math.random() * (TARGET_MAX_R - TARGET_MIN_R);
+  const m = r + 12;
+  targets.push({
+    x: m + Math.random() * Math.max(1, canvas._w - m * 2),
+    y: m + Math.random() * Math.max(1, canvas._h - m * 2),
+    r, born: now, life: TARGET_LIFETIME_MS
+  });
+}
+function comboMult(){ return Math.min(COMBO_CAP, 1 + blitz.combo * COMBO_STEP); }
+
+function startBlitz(){
+  mode = "blitz"; targets = []; particles = [];
+  blitz = { score: 0, combo: 0, maxCombo: 0, hits: 0, misses: 0, expired: 0,
+            reactSum: 0, startedAt: performance.now(), lastSpawn: performance.now(), over: false };
+  $("initialsBox").style.display = "flex";
+  savedThisRun = false;
+  resizeCanvas(); show("blitz");
+  lastTs = performance.now();
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(blitzLoop);
+  beep(660, .12, "triangle");
+}
+function blitzLoop(ts){
+  if (!blitz || blitz.over) return;
+  const dt = ts - lastTs; lastTs = ts; fps = fps * .9 + (1000 / Math.max(1, dt)) * .1;
+  const elapsed = ts - blitz.startedAt, remain = Math.max(0, BLITZ_DURATION_MS - elapsed);
+
+  // spawn
+  if (targets.length < MAX_TARGETS && ts - blitz.lastSpawn >= spawnInterval(ts)){
+    spawnTarget(ts); blitz.lastSpawn = ts;
+  }
+  // expire
+  for (let i = targets.length - 1; i >= 0; i--){
+    if (ts - targets[i].born > targets[i].life){
+      targets.splice(i, 1); blitz.expired++; blitz.misses++; blitz.combo = 0;
+    }
+  }
+  // partikel
+  particles = particles.filter(p => (p.life -= dt) > 0);
+  drawBlitz(ts);
+  updateHud(remain);
+  if (DEBUG) updateDebug(ts);
+  if (remain <= 0){ endBlitz(); return; }
+  raf = requestAnimationFrame(blitzLoop);
+}
+function drawBlitz(ts){
+  const w = canvas._w, h = canvas._h;
+  ctx.clearRect(0, 0, w, h);
+  // grid samar (arena)
+  ctx.strokeStyle = "rgba(255,255,255,.05)"; ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 64){ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 64){ ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+  // target: lingkaran mengecil + ring sisa waktu + titik tengah
+  for (const t of targets){
+    const age = ts - t.born, p = age / t.life;
+    const r = t.r * (1 - p * 0.35); // mengecil -> makin susah kalau ditunda
+    ctx.beginPath(); ctx.arc(t.x, t.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,168,232,.85)"; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(t.x, t.y, r * 0.45, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff"; ctx.fill();
+    ctx.beginPath(); ctx.arc(t.x, t.y, r + 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - p));
+    ctx.lineWidth = 3; ctx.strokeStyle = p > .7 ? "#ff5252" : "#ffd54a"; ctx.stroke();
+  }
+  // partikel hit
+  for (const p of particles){
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1 - p.life / p.max), 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,213,74,${p.life / p.max})`; ctx.lineWidth = 3; ctx.stroke();
+  }
+}
+function updateHud(remainMs){
+  $("hudScore").textContent = blitz.score;
+  $("hudTime").textContent = Math.ceil(remainMs / 1000);
+  const tot = blitz.hits + blitz.misses;
+  $("hudAcc").textContent = tot ? Math.round(blitz.hits / tot * 100) + "%" : "100%";
+  $("hudCombo").textContent = "×" + comboMult().toFixed(1);
+  $("hudReact").textContent = blitz.hits ? Math.round(blitz.reactSum / blitz.hits) + " ms" : "—";
+}
+function updateDebug(ts){
+  $("debug").classList.add("on");
+  $("debug").textContent =
+    `spawn interval: ${Math.round(spawnInterval(ts))} ms\n` +
+    `target aktif: ${targets.length} / ${MAX_TARGETS}\n` +
+    `reaksi terakhir: ${blitz.lastReact ? blitz.lastReact + " ms" : "—"}\n` +
+    `fps: ${Math.round(fps)}`;
+}
+canvas.addEventListener("pointerdown", e => {
+  if (!blitz || blitz.over) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const now = performance.now();
+  // cari target yang kena, yang paling dekat tengahnya dulu
+  let best = -1, bestD = Infinity;
+  targets.forEach((t, i) => {
+    const d = Math.hypot(x - t.x, y - t.y);
+    const r = t.r * (1 - (now - t.born) / t.life * 0.35);
+    if (d <= r && d < bestD){ best = i; bestD = d; }
+  });
+  if (best >= 0){
+    const t = targets[best]; targets.splice(best, 1);
+    const age = now - t.born, react = Math.round(age);
+    const precision = 1 - bestD / t.r;                 // 1 = pas tengah
+    const speed = 1 - age / t.life;                     // 1 = instan kena
+    const mult = comboMult();
+    const pts = Math.round((BASE_SCORE + precision * PRECISION_BONUS_MAX + speed * SPEED_BONUS_MAX) * mult);
+    blitz.score += pts; blitz.hits++; blitz.combo++; blitz.reactSum += age; blitz.lastReact = react;
+    blitz.maxCombo = Math.max(blitz.maxCombo, blitz.combo);
+    particles.push({ x: t.x, y: t.y, r: t.r + 14, life: 260, max: 260 });
+    beep(520 + Math.min(480, blitz.combo * 30), .09, "sine");
+    if (blitz.combo > 0 && blitz.combo % 5 === 0) toast(`🔥 Combo ${blitz.combo}! +${pts}`);
+  } else {
+    blitz.misses++; blitz.combo = 0;
+    blitz.score = Math.max(0, blitz.score - MISS_PENALTY);
+    beep(160, .12, "square");
+  }
+});
+function endBlitz(){
+  blitz.over = true; cancelAnimationFrame(raf);
+  const tot = blitz.hits + blitz.misses;
+  const acc = tot ? Math.round(blitz.hits / tot * 100) : 100;
+  lastResult = { mode: "blitz", score: blitz.score,
+    stats: [["🎯 Hit", blitz.hits], ["❌ Miss", blitz.misses],
+            ["🎯 Akurasi", acc + "%"], ["🔥 Combo maks", blitz.maxCombo],
+            ["⚡ Reaksi rata2", blitz.hits ? Math.round(blitz.reactSum / blitz.hits) + " ms" : "—"],
+            ["⏱️ Durasi", "60 dtk"]] };
+  showResult("BLITZ SELESAI!");
+  beep(880, .2, "triangle"); setTimeout(() => beep(1174, .25, "triangle"), 160);
+}
+
+/* ================= REACTION SPRINT ================= */
+let react = null;
+let reactTimes = []; // array yang sama dipakai react.times — endReaction baca ini
+function startReaction(){
+  mode = "reaction";
+  reactTimes = [];
+  react = { round: 1, times: reactTimes, state: "wait", timer: null, greenAt: 0 };
+  $("initialsBox").style.display = "none"; // leaderboard hanya untuk Blitz di v1
+  savedThisRun = true; // tidak ada skor Blitz untuk disimpan
+  show("react"); renderReactDots(); nextReactRound();
+}
+function renderReactDots(){
+  const d = $("reactDots"); d.innerHTML = "";
+  for (let i = 0; i < REACTION_ROUNDS; i++){
+    const s = document.createElement("span");
+    s.className = "dot" + (i < react.times.length ? " done" : i === react.times.length ? " now" : "");
+    d.appendChild(s);
+  }
+  $("reactRound").textContent = Math.min(react.times.length + 1, REACTION_ROUNDS) + " / " + REACTION_ROUNDS;
+  $("reactAvg").textContent = react.times.length ? Math.round(react.times.reduce((a,b) => a+b, 0) / react.times.length) + " ms" : "—";
+}
+function nextReactRound(){
+  if (react.times.length >= REACTION_ROUNDS){ endReaction(); return; }
+  react.state = "wait";
+  const panel = $("reactPanel"); panel.className = "wait on";
+  $("reactBig").textContent = "TUNGGU HIJAU…";
+  $("reactSub").textContent = "Klik begitu layar jadi hijau. Jangan klik duluan!";
+  renderReactDots();
+  const wait = REACTION_MIN_WAIT + Math.random() * (REACTION_MAX_WAIT - REACTION_MIN_WAIT);
+  react.timer = setTimeout(() => {
+    react.state = "go"; react.greenAt = performance.now();
+    panel.className = "go on";
+    $("reactBig").textContent = "KLIK SEKARANG!";
+    $("reactSub").textContent = "";
+    beep(990, .08, "sine");
+  }, wait);
+}
+$("reactPanel").addEventListener("pointerdown", () => {
+  if (!react) return;
+  if (react.state === "wait"){
+    clearTimeout(react.timer);
+    $("reactBig").textContent = "⛔ TERLALU CEPAT!";
+    $("reactSub").textContent = "False start — ronde diulang…";
+    beep(140, .2, "square");
+    setTimeout(nextReactRound, 900);
+    react.state = "penalty";
+  } else if (react.state === "go"){
+    const ms = Math.round(performance.now() - react.greenAt);
+    react.times.push(ms);
+    $("reactLast").textContent = ms + " ms";
+    beep(720, .1, "sine");
+    nextReactRound();
+  }
+});
+function endReaction(){
+  const list = reactTimes.slice(); // salin dulu, baru null-kan state
+  react = null;
+  const avg = list.length ? Math.round(list.reduce((a,b) => a+b, 0) / list.length) : 0;
+  const best = list.length ? Math.min(...list) : 0;
+  const worst = list.length ? Math.max(...list) : 0;
+  lastResult = { mode: "reaction", score: avg ? Math.max(0, 1000 - avg) : 0,
+    stats: [["⚡ Rata-rata", avg + " ms"], ["🏅 Terbaik", best + " ms"],
+            ["🐢 Terlambat", worst + " ms"], ["🔁 Ronde", list.length + " / " + REACTION_ROUNDS]] };
+  showResult("REACTION SELESAI!");
+}
+
+/* ================= HASIL ================= */
+function showResult(title){
+  $("resultTitle").textContent = title;
+  $("resultScore").textContent = lastResult.score;
+  $("resultScore").style.color = lastResult.mode === "reaction" ? "var(--sky)" : "var(--gold)";
+  const grid = $("resultStats"); grid.innerHTML = "";
+  lastResult.stats.forEach(([l, v]) => {
+    const d = document.createElement("div");
+    d.className = "stat";
+    d.innerHTML = `<div class="v">${escapeHtml(String(v))}</div><div class="l">${escapeHtml(l)}</div>`;
+    grid.appendChild(d);
+  });
+  $("boardResultTitle").textContent = lastResult.mode === "blitz"
+    ? "🏆 TOP 5 BLITZ — PERANGKAT INI" : "🏆 TOP 5 BLITZ — PERANGKAT INI (Reaction tidak masuk leaderboard v1)";
+  renderBoard($("boardResultList"), -1);
+  $("btnSaveScore").disabled = lastResult.mode !== "blitz" || !qualifies(lastResult.score);
+  $("btnSaveScore").textContent = lastResult.mode !== "blitz" ? "—" :
+    qualifies(lastResult.score) ? "💾 Simpan" : "Skor belum masuk Top 5";
+  show("result");
+}
+$("btnSaveScore").addEventListener("click", () => {
+  if (lastResult.mode !== "blitz" || savedThisRun) return;
+  const name = ($("initialsInput").value || "ZEC").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "ZEC";
+  const tot = lastResult.stats.find(s => String(s[0]).includes("Akurasi"));
+  const board = loadBoard();
+  board.push({ name, score: lastResult.score, acc: parseInt(String(tot ? tot[1] : "0")) || 0, date: new Date().toISOString().slice(0, 10) });
+  board.sort((a, b) => b.score - a.score);
+  const trimmed = board.slice(0, LB_SIZE);
+  saveBoard(trimmed);
+  savedThisRun = true;
+  const idx = trimmed.findIndex(e => e.name === name && e.score === lastResult.score);
+  renderBoard($("boardResultList"), idx);
+  renderBoard($("boardMenuList"), -1);
+  $("btnSaveScore").disabled = true; $("btnSaveScore").textContent = "✅ Tersimpan";
+  toast("Skor tersimpan di leaderboard lokal!");
+  beep(880, .15, "triangle");
+});
+$("btnAgain").addEventListener("click", () => { mode === "reaction" ? startReaction() : startBlitz(); });
+$("btnMenu").addEventListener("click", () => { renderBoard($("boardMenuList"), -1); show("menu"); });
+$("btnBlitz").addEventListener("click", startBlitz);
+$("btnReact").addEventListener("click", startReaction);
+$("btnQuitBlitz").addEventListener("click", () => { if (blitz) blitz.over = true; cancelAnimationFrame(raf); show("menu"); });
+$("btnQuitReact").addEventListener("click", () => { if (react) clearTimeout(react.timer); react = null; show("menu"); });
+
+resizeCanvas();
+if (DEBUG) $("debug").classList.add("on");
+</script>
+</body>
+</html>
